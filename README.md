@@ -1,6 +1,14 @@
 # 📱 Phone-to-PC-to-Router Automated Pipeline (AutoICS)
 
+[![License: GPL v3](https://img.shields.io/badge/License-GPLv3-blue.svg)](LICENSE)
+
 A set of specialized scripts designed to turn any Windows PC (even older hardware) into an automated bridge that shares mobile internet (via USB Tethering) to an external Router.
+
+## 📄 Documentation
+*   **[Code Documentation](CODE_DOCUMENTATION.md)**: Deep dive into the architecture and logic.
+*   **[Design Philosophy](DESIGN_PHILOSOPHY.md)**: Why and how this project was built.
+*   **[Contributing](CONTRIBUTING.md)**: How you can help improve the system.
+*   **[Security Policy](SECURITY.md)**: Security standards and audit reports.
 
 ## 🚀 The Goal
 To create a "Plug and Play" experience where you simply connect your phone via USB, and the PC automatically configures **Internet Connection Sharing (ICS)** to push that data through the Ethernet port into your router—restoring internet to your entire home Wi-Fi network without manual setup.
