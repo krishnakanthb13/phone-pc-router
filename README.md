@@ -2,6 +2,8 @@
 
 [![License: GPL v3](https://img.shields.io/badge/License-GPLv3-blue.svg)](LICENSE)
 
+![AutoICS v1.0.0 Release Hero](assets/release_v1.0.0.png)
+
 A set of specialized scripts designed to turn any Windows PC (even older hardware) into an automated bridge that shares mobile internet (via USB Tethering) to an external Router.
 
 ## 📄 Documentation
