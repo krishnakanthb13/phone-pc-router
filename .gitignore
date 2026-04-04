@@ -1,0 +1,15 @@
+# Logs
+*.log
+
+# Binaries
+nssm.exe
+nssm-2.24/
+
+# Temporary files
+*.zip
+*.tmp
+
+# OS files
+Thumbs.db
+desktop.ini
+.DS_Store
