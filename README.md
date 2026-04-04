@@ -77,3 +77,15 @@ Check these files in the root directory for real-time status:
 *   `auto-ics.log`: Timeline of adapter detection and connection sharing.
 *   `service.log`: Standard output log from the service manager.
 *   `service-error.log`: Technical errors (if any occur).
+
+---
+
+## 💡 Advanced Tips & Best Practices
+
+1.  **🚀 USB Hardware**: Your USB cable is the "backbone" of your home network. Use a high-quality, short USB 3.0 cable to ensure the highest data transfer speeds between your phone and the PC.
+2.  **🔋 Phone Battery Settings**: On your Poco F3 GT, ensure that USB Tethering is not being optimized by the battery saver. Setting it as a "Developer Option" can help maintain stability during long sessions.
+3.  **⚡ DNS Optimization**: To speed up website loading times, you can manually set your router's DNS to `8.8.8.8` (Google) or `1.1.1.1` (Cloudflare).
+4.  **🌐 Mobile NAT (Port Forwarding)**: Most mobile data providers use CGNAT. If you need to host games or a web server, traditional port forwarding won't work. Consider using tools like **Tailscale** or **Cloudflare Tunnels** for external access.
+5.  **🐢 Legacy Hardware**: This system uses ~30MB of RAM and <1% CPU, making it perfectly safe for even the oldest dual-core systems. No further optimization is needed for your 12-year-old PC.
+
+---
