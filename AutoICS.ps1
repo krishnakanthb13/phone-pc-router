@@ -15,6 +15,22 @@ function Log($msg) {
     Add-Content -Path $logFile -Value "$time - $msg" -Encoding UTF8
 }
 
+function Ensure-SharingRole($config, $requiredType, $adapterName, $roleLabel) {
+    if (-not $config.SharingEnabled) {
+        $config.EnableSharing($requiredType)
+        Log "Sharing enabled on $adapterName ($roleLabel)"
+        return
+    }
+
+    $currentType = $config.SharingConnectionType
+    if ($currentType -ne $requiredType) {
+        $config.DisableSharing()
+        Start-Sleep -Milliseconds 300
+        $config.EnableSharing($requiredType)
+        Log "Sharing role corrected on $adapterName ($roleLabel)"
+    }
+}
+
 Log "===== AutoICS Service Started (Refresh: $refreshSeconds s) ====="
 
 # Ensure ICS service is running at start
@@ -30,7 +46,7 @@ while ($true) {
             
             # Only log if we just transition to "Detected"
             if ($lastStatus -ne "Detected") {
-                Log "Adatpers Detected. Ensuring ICS is enabled..."
+                Log "Adapters detected. Ensuring ICS is enabled..."
                 $lastStatus = "Detected"
             }
 
@@ -42,15 +58,13 @@ while ($true) {
                 $config = $netSharingManager.INetSharingConfigurationForINetConnection($conn)
 
                 # Set Public (Source)
-                if ($props.Name -eq $sourceName -and -not $config.SharingEnabled) {
-                    $config.EnableSharing(0) # 0 = public
-                    Log "Sharing enabled on $sourceName (Public)"
+                if ($props.Name -eq $sourceName) {
+                    Ensure-SharingRole -config $config -requiredType 0 -adapterName $sourceName -roleLabel "Public"
                 }
 
                 # Set Private (Target)
-                if ($props.Name -eq $targetName -and -not $config.SharingEnabled) {
-                    $config.EnableSharing(1) # 1 = private
-                    Log "Sharing enabled on $targetName (Private)"
+                if ($props.Name -eq $targetName) {
+                    Ensure-SharingRole -config $config -requiredType 1 -adapterName $targetName -roleLabel "Private"
                 }
             }
 

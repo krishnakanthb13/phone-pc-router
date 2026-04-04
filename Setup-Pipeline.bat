@@ -2,7 +2,7 @@
 setlocal
 
 :: Check for Administrator privileges
->nul 2>&1 "%SYSTEMROOT%\system32\cacls.exe" "%SYSTEMROOT%\system32\config\system"
+powershell -NoProfile -Command "exit([int]-not([Security.Principal.WindowsPrincipal][Security.Principal.WindowsIdentity]::GetCurrent()).IsInRole([Security.Principal.WindowsBuiltInRole]::Administrator))" >nul 2>&1
 if %errorlevel% neq 0 (
     echo ************************************************************
     echo ERROR: Administrative privileges are REQUIRED for this setup.
@@ -22,9 +22,10 @@ echo.
 echo [STEP 1/2] Renaming Network Adapters...
 powershell -NoProfile -ExecutionPolicy Bypass -File "%~dp0Rename-Adapters.ps1"
 if %errorlevel% neq 0 (
-    echo [!] Warning: Rename-Adapters script returned an error code.
-    echo Please ensure your phone is plugged in and USB tethering is enabled!
+    echo [!] Error: Rename-Adapters failed.
+    echo Setup cannot continue until adapter mapping is fixed.
     pause
+    exit /b 1
 )
 
 echo.

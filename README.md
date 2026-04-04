@@ -21,7 +21,7 @@ To create a "Plug and Play" experience where you simply connect your phone via U
 
 | File | Description |
 | :--- | :--- |
-| **`Setup-Pipeline.bat`** | **Start Here.** Automatically renames adapters and installs the background service. |
+| **`Setup-Pipeline.bat`** | **Start Here.** Prompts for adapter mapping, then installs the background service. |
 | **`AutoICS.ps1`** | The main logic engine. Monitors adapters and manages ICS status. |
 | **`Install-Service.ps1`** | Downloads **NSSM** and registers AutoICS as a Windows Service. |
 | **`Rename-Adapters.ps1`** | Standardizes your network adapter names to `USB-Tether` and `LAN`. |
@@ -34,7 +34,7 @@ To create a "Plug and Play" experience where you simply connect your phone via U
 
 ### 1. Prerequisites
 *   **Phone**: Poco F3 GT (or any Android device with USB Tethering).
-*   **PC**: Windows 10/11 (Optimized for older 12+ year old systems).
+*   **PC**: Windows 10/11 (x64 and x86 are supported; optimized for older systems).
 *   **Router**: Configured in **Access Point (AP) Mode** (or DHCP disabled).
 
 ### 2. Installation
@@ -42,8 +42,8 @@ To create a "Plug and Play" experience where you simply connect your phone via U
 2.  Right-click **`Setup-Pipeline.bat`** and select **"Run as Administrator"**.
 3.  The script will automatically:
     *   Confirm Admin rights.
-    *   Rename your network adapters.
-    *   Download and verify the **NSSM** binary (via SHA1 hash).
+    *   Interactively select and rename your source/target adapters.
+    *   Download and verify the correct **NSSM** binary for your OS architecture (via SHA1 hash).
     *   Install the **AutoICS** background service.
 
 ---
