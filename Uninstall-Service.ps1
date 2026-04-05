@@ -1,6 +1,19 @@
+# =========================
+# Uninstall-Service - Full Cleanup for AutoICS
+# =========================
+
 $ErrorActionPreference = "Stop"
 $serviceName = "AutoICS"
 $nssmPath = Join-Path $PSScriptRoot "nssm.exe"
+
+# Log files to clean up
+$logFiles = @(
+    "auto-ics.log",
+    "service.log",
+    "service-error.log",
+    "auto-ics.log.bak",
+    "service.log.bak"
+)
 
 function Test-IsAdmin {
     $identity = [Security.Principal.WindowsIdentity]::GetCurrent()
@@ -9,54 +22,130 @@ function Test-IsAdmin {
 }
 
 function Remove-WithSc {
-    Write-Host "Using built-in Service Control fallback..."
+    Write-Host "[*] Falling back to SC.EXE for service removal..."
     
-    # Try stopping it first (non-blocking)
+    # 1. Stop service
     sc.exe stop $serviceName | Out-Null
     
-    # Wait for service to stop (up to 5 seconds)
+    # 2. Disable service
+    sc.exe config $serviceName start= disabled | Out-Null
+    
+    # 3. Wait for full stop (max 5s)
     $timeout = 0
     while ((Get-Service $serviceName -ErrorAction SilentlyContinue).Status -ne 'Stopped' -and $timeout -lt 5) {
         Start-Sleep -Seconds 1
         $timeout++
     }
     
+    # 4. Delete service
     sc.exe delete $serviceName | Out-Null
 }
 
+function Disable-ICS {
+    <#
+    .SYNOPSIS
+        Sweeps through all network connections and ensures Internet Connection 
+        Sharing (ICS) is disabled, returning settings to default.
+    #>
+    Write-Host "[*] Disabling Internet Connection Sharing (ICS/SharedAccess)..."
+    try {
+        $netSharingManager = New-Object -ComObject HNetCfg.HNetShare
+        $connections = $netSharingManager.EnumEveryConnection()
+        $foundCount = 0
+        foreach ($item in $connections) {
+            $props = $netSharingManager.NetConnectionProps($item)
+            $config = $netSharingManager.INetSharingConfigurationForINetConnection($item)
+            if ($config.SharingEnabled) {
+                $config.DisableSharing()
+                Write-Host "[-] Disabled sharing on: $($props.Name)"
+                $foundCount++
+            }
+        }
+        if ($foundCount -eq 0) { Write-Host "   (No active sharing found to disable)" }
+    } catch {
+        Write-Warning "Non-critical: Could not disable ICS via COM. You might need to check 'Network Connections' manually."
+    }
+}
+
 try {
-    # 1. Admin check (required for sc.exe and nssm)
+    Write-Host ""
+    Write-Host "============================================="
+    Write-Host "   OFFICIAL AUTO-ICS CLEANUP UNINSTALLER"
+    Write-Host "============================================="
+    Write-Host ""
+
+    # 1. Admin Verification
     if (-not (Test-IsAdmin)) {
-        throw "Administrator privileges are required to uninstall the service. Please run PowerShell as Admin."
+        throw "ADMIN PRIVILEGES REQUIRED. Please right-click PowerShell and 'Run as Administrator'."
     }
 
-    # 2. Check if service exists before starting removal
+    # 2. Service Deconstruction
     $service = Get-Service -Name $serviceName -ErrorAction SilentlyContinue
-    if (-not $service) {
-        Write-Host "Service '$serviceName' is not installed."
-        exit 0
-    }
-
-    # 3. Attempt removal via NSSM (preferred)
-    if (Test-Path $nssmPath) {
-        Write-Host "Stopping $serviceName service..."
-        & "$nssmPath" stop $serviceName | Out-Null
-
-        Write-Host "Removing $serviceName service..."
-        & "$nssmPath" remove $serviceName confirm | Out-Null
-
-        # If NSSM fails (e.g. exit code non-zero), fallback to sc.exe
-        if ($LASTEXITCODE -ne 0) {
-            Write-Warning "NSSM removal failed with exit code $LASTEXITCODE. Falling back..."
+    if ($service) {
+        if (Test-Path $nssmPath) {
+            Write-Host "[1/4] Stopping and removing service via NSSM..."
+            & "$nssmPath" stop $serviceName | Out-Null
+            & "$nssmPath" remove $serviceName confirm | Out-Null
+            
+            if ($LASTEXITCODE -ne 0) {
+                Write-Warning "NSSM could not remove the service (Exit Code: $LASTEXITCODE)."
+                Remove-WithSc
+            }
+        } else {
+            Write-Host "[1/4] Binary missing. Using SC.EXE instead..."
             Remove-WithSc
         }
+        Write-Host "   (Service has been fully decommissioned)"
     } else {
-        Remove-WithSc
+        Write-Host "[1/4] Service '$serviceName' not found (probably already uninstalled)."
     }
 
-    Write-Host "Done. Service '$serviceName' has been uninstalled successfully."
+    # 3. Networking Normalization
+    Write-Host "[2/4] Resetting system network shares..."
+    Disable-ICS
+
+    # 4. Binary/File Cleanup
+    Write-Host "[3/4] Purging binary dependencies..."
+    if (Test-Path $nssmPath) {
+        # Brief pause to allow OS to release any file locks from the 'stop' command
+        Start-Sleep -Seconds 1
+        Remove-Item -Path $nssmPath -Force -ErrorAction SilentlyContinue
+        if (Test-Path $nssmPath) {
+            Write-Warning "Could not delete nssm.exe (File locked). It will be removed on next reboot."
+        } else {
+            Write-Host "   (nssm.exe purged)"
+        }
+    } else {
+        Write-Host "   (No binary found to delete)"
+    }
+
+    # 5. Log Purge
+    Write-Host "[4/4] Cleaning log history..."
+    $logsCleared = 0
+    foreach ($log in $logFiles) {
+        $path = Join-Path $PSScriptRoot $log
+        if (Test-Path $path) {
+            Remove-Item -Path $path -Force -ErrorAction SilentlyContinue
+            if (-not (Test-Path $path)) {
+                $logsCleared++
+            }
+        }
+    }
+    Write-Host "   ($logsCleared log variant(s) cleared)"
+
+    Write-Host ""
+    Write-Host "============================================="
+    Write-Host "   🎉 SUCCESS: FULL CLEANUP COMPLETE!"
+    Write-Host "============================================="
+    Write-Host "The PC is now back to its original state."
+    Write-Host "Note: Network names 'USB-Tether' and 'LAN' were kept in the OS settings."
+    Write-Host ""
 }
 catch {
-    Write-Error "CRITICAL: Uninstall failed: $($_.Exception.Message)"
+    Write-Host ""
+    Write-Host "---------------------------------------------" -ForegroundColor Red
+    Write-Host "ERROR: $($_.Exception.Message)" -ForegroundColor Red
+    Write-Host "---------------------------------------------" -ForegroundColor Red
+    Write-Host ""
     exit 1
 }

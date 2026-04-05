@@ -6,15 +6,14 @@
 set "SOURCE_NAME=USB-Tether"
 set "TARGET_NAME=LAN"
 
-:: ---- ADMIN CHECK ----
+:: ---- ADMIN CHECK & AUTO-ELEVATION ----
 net session >nul 2>&1
 if %errorLevel% neq 0 (
-    echo.
-    echo [!] Administrator privileges are required.
-    echo Please right-click this file and select "Run as Administrator".
-    echo.
-    pause
-    exit /b 1
+    powershell -NoProfile -ExecutionPolicy Bypass -Command ^
+        "$use_wt = (Get-Command wt -ErrorAction SilentlyContinue); " ^
+        "if ($use_wt) { Start-Process wt -ArgumentList \"cmd /c `\"`\"%~f0`\"`\"\" -Verb RunAs } " ^
+        "else { Start-Process cmd -ArgumentList \"/c `\"`\"%~f0`\"`\"\" -Verb RunAs }"
+    exit /b
 )
 
 echo.

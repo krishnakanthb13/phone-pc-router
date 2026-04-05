@@ -1,16 +1,15 @@
 @echo off
 setlocal
 
-:: Check for Administrator privileges
-powershell -NoProfile -Command "exit([int]-not([Security.Principal.WindowsPrincipal][Security.Principal.WindowsIdentity]::GetCurrent()).IsInRole([Security.Principal.WindowsBuiltInRole]::Administrator))" >nul 2>&1
-if %errorlevel% neq 0 (
-    echo ************************************************************
-    echo ERROR: Administrative privileges are REQUIRED for this setup.
-    echo Please right-click this file and select 'Run as Administrator'.
-    echo ************************************************************
-    pause
-    exit /b
-)
+:: ---- ADMIN CHECK & AUTO-ELEVATION ----
+powershell -NoProfile -ExecutionPolicy Bypass -Command ^
+    "if (-not([Security.Principal.WindowsPrincipal][Security.Principal.WindowsIdentity]::GetCurrent()).IsInRole([Security.Principal.WindowsBuiltInRole]::Administrator)) {" ^
+    "    $use_wt = (Get-Command wt -ErrorAction SilentlyContinue); " ^
+    "    if ($use_wt) { Start-Process wt -ArgumentList \"cmd /c `\"`\"%~f0`\"`\"\" -Verb RunAs } " ^
+    "    else { Start-Process cmd -ArgumentList \"/c `\"`\"%~f0`\"`\"\" -Verb RunAs } " ^
+    "    exit 1" ^
+    "}"
+if %errorLevel% neq 0 ( exit /b )
 
 echo.
 echo ============================================================
