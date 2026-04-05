@@ -2,7 +2,9 @@
 
 [![License: GPL v3](https://img.shields.io/badge/License-GPLv3-blue.svg)](LICENSE)
 
-![AutoICS v1.0.0 Release Hero](assets/release_v1.0.0.png)
+<p align="center">
+  <img src="assets/release_v0.0.11.png" alt="AutoICS v0.0.11 - The Perfect Bridge Release Hero" width="800">
+</p>
 
 A set of specialized scripts designed to turn any Windows PC (even older hardware) into an automated bridge that shares mobile internet (via USB Tethering) to an external Router.
 
@@ -21,13 +23,13 @@ To create a "Plug and Play" experience where you simply connect your phone via U
 
 | File | Description |
 | :--- | :--- |
-| **`Setup-Pipeline.bat`** | **Start Here.** Prompts for adapter mapping, then installs the background service. |
+| **`Setup-Pipeline.bat`** | **Start Here.** One-click setup with **Auto-Elevation**. Installs the background service. |
 | **`AutoICS.ps1`** | **Logic Engine.** Monitors adapters, auto-detects tether interfaces by hardware, and manages ICS. |
 | **`Install-Service.ps1`** | Downloads **NSSM** and registers AutoICS as a Windows Service. |
 | **`Rename-Adapters.ps1`** | Setup utility that auto-detects and renames your network adapters to `USB-Tether` and `LAN`. |
-| **`Toggle-ICS.bat`** | **Manual Reset.** A one-click utility to disable and re-enable ICS sharing. |
+| **`Toggle-ICS.bat`** | **Manual Reset.** One-click utility with **Auto-Elevation** and **Windows Terminal** support to reset ICS. |
 | **`Enable-Tether-ADB.bat`** | Optional utility to force-enable RNDIS (USB Tethering) via ADB. |
-| **`Uninstall-Service.ps1`** | Safely removes the AutoICS service and stops all background loops. |
+| **`Uninstall-Service.ps1`** | **Full Cleanup.** Removes service, deletes binaries/logs, and disables all sharing settings. |
 
 ---
 
@@ -40,11 +42,10 @@ To create a "Plug and Play" experience where you simply connect your phone via U
 
 ### 2. Installation
 1.  Connect your phone to the PC via USB and enable **USB Tethering**.
-2.  Right-click **`Setup-Pipeline.bat`** and select **"Run as Administrator"**.
+2.  Double-click **`Setup-Pipeline.bat`**.
 3.  The script will automatically:
-    *   Confirm Admin rights.
-    *   Interactively select and rename your source/target adapters.
-    *   Download and verify the correct **NSSM** binary for your OS architecture (via SHA1 hash).
+    *   **Auto-Elevate**: Proactively request Admin rights and relaunch in Windows Terminal (if preferred).
+    *   Interactively select and rename your source/target adapters (with smart auto-detection).
     *   Install the **AutoICS** background service.
 
 ---
@@ -53,7 +54,7 @@ To create a "Plug and Play" experience where you simply connect your phone via U
 
 Once installed, you don't need to touch your PC. The system is **Self-Healing**:
 1.  **Auto-Detection**: The service identifies your phone by its **hardware description** (Remote NDIS/RNDIS), meaning it works even if Windows renames the connection (e.g., from `Ethernet 5` to `Ethernet 6`) after a reboot.
-2.  **Renaming**: It automatically renames the detected adapter to `USB-Tether` to maintain a consistent internal state.
+2.  **Renaming**: It automatically renames the detected adapter to `USB-Tether` on every 30s cycle to maintain parity.
 3.  **Activation**: If it detects the phone is "Up," it automatically enables ICS sharing to the `LAN` adapter.
 4.  **Efficiency**: It uses only **~30MB of RAM** and **<1% CPU**, making it perfect for legacy hardware.
 5.  **Logging**: It only writes to `auto-ics.log` when a status change or auto-rename occurs, preventing disk bloat.
@@ -75,12 +76,12 @@ The project includes a specialized `.gitignore` to ensure your repository stays 
 ---
 
 ## 🛑 Maintenance & Uninstallation
-If you wish to remove the service and stop the background monitoring:
-1.  Open **PowerShell as Administrator**.
-2.  Run:
-    ```powershell
-    .\Uninstall-Service.ps1
-    ```
+The uninstaller provides a **Full Cleanup** of the system state:
+1.  Double-click **`Uninstall-Service.ps1`**.
+2.  The script will:
+    *   Stop and remove the Windows Service.
+    *   **Disable ICS Sharing** (returning networking to default).
+    *   Delete binaries (`nssm.exe`) and purge all log files.
 
 ---
 

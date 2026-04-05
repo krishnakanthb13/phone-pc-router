@@ -9,7 +9,7 @@
 | `Install-Service.ps1` | Script | Environment setup and Windows Service registration using NSSM. |
 | `Rename-Adapters.ps1` | Script | Standardization utility for naming network interfaces. |
 | `Setup-Pipeline.bat` | Script | Entry-point script for automated installation and configuration. |
-| `Uninstall-Service.ps1` | Script | Clean removal of the Windows Service and associated logs. |
+| `Uninstall-Service.ps1` | Script | **Full Cleanup.** Removes the Windows Service, deletes `nssm.exe`, clears logs, and disables ICS. |
 | `nssm.exe` | Binary | Non-Sucking Service Manager for running scripts as background services. |
 | `.gitignore` | Config | Defines files to be excluded from version control. |
 | `LICENSE` | Legal | GPL v3 license text. |
@@ -45,6 +45,7 @@ graph TD
 | **ICS Management** | Uses Windows Shell COM objects to toggle sharing. Assigns `USB-Tether` as the Public (Source) role and `LAN` as the Private (Target) role. | `HNetCfg.HNetShare` (COM) |
 | **Service Wrapper** | Wraps the PowerShell script as a native Windows service. | `NSSM` (Non-Sucking Service Manager) |
 | **Tethering Check** | Continuously polling for the `Status` property of the `USB-Tether` adapter. | `Get-NetAdapter` |
+| **Auto-Elevation** | `Toggle-ICS.bat` uses a PowerShell relauncher to request Admin rights and prefers `wt.exe` (Windows Terminal) if available. | `Start-Process -Verb RunAs` |
 
 ## 🔄 Data Flow
 
