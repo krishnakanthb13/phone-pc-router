@@ -27,11 +27,13 @@ graph TD
     C --> D[AutoICS.ps1]
     
     subgraph Background Service (NSSM)
-    D --> E{Adapters Up?}
-    E -- Yes --> F[Enforce ICS via COM Objects]
-    E -- No --> G[Wait 30 Seconds]
-    F --> G
-    G --> D
+    D --> E[Auto-Detect Tether by Hardware]
+    E --> F[Rename to USB-Tether?]
+    F --> G{Adapters Up?}
+    G -- Yes --> H[Enforce ICS via COM Objects]
+    G -- No --> I[Wait 30 Seconds]
+    H --> I
+    I --> D
     end
 ```
 
@@ -39,10 +41,10 @@ graph TD
 
 | Component | Logic | Key API / Tools |
 | :--- | :--- | :--- |
-| **Adapter Naming** | Renames interfaces matching specific descriptions to `USB-Tether` and `LAN`. | `Get-NetAdapter`, `Rename-NetAdapter` |
-| **ICS Management** | Uses Windows Shell COM objects to toggle sharing for specific adapters. | `HNetCfg.HNetShare` (COM) |
+| **Adapter Naming** | Scans all network interfaces for hardware-specific descriptions like `Remote NDIS` or `RNDIS`. Renames the first match to `USB-Tether` and standardizes the LAN port as `LAN`. | `Get-NetAdapter`, `Rename-NetAdapter` |
+| **ICS Management** | Uses Windows Shell COM objects to toggle sharing. Assigns `USB-Tether` as the Public (Source) role and `LAN` as the Private (Target) role. | `HNetCfg.HNetShare` (COM) |
 | **Service Wrapper** | Wraps the PowerShell script as a native Windows service. | `NSSM` (Non-Sucking Service Manager) |
-| **Tethering Check** | Polls the `Status` property of the `USB-Tether` adapter. | `Get-NetAdapter` |
+| **Tethering Check** | Continuously polling for the `Status` property of the `USB-Tether` adapter. | `Get-NetAdapter` |
 
 ## 🔄 Data Flow
 

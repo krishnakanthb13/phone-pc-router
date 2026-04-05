@@ -19,6 +19,10 @@ Legacy hardware is often abandoned because it's too slow for modern tasks, yet t
 *   **Zero-Maintenance**: Once installed, the system should operate without user intervention for months.
 *   **Security First**: Scripts ensure admin rights and verify binaries (NSSM) before execution.
 
+## 🧠 Adapting to Volatile Environments
+
+One of the project's key innovations is **Persistent Object Identification**. Windows often reassigns names to network adapters (e.g., `Ethernet 4` becomes `Ethernet 5`) when devices are re-plugged or the system reboots. To address this, **AutoICS** uses hardware description patterns (like `Remote NDIS`) instead of static interface names. This ensures the bridge is truly "set and forget," as the system can re-identify and re-standardize the environment even after major system updates or hardware re-enumerations.
+
 ## 👥 Target Audience & Use Cases
 
 *   **Rural Connectivity**: Users in areas with poor ISP infrastructure but great 5G mobile coverage.

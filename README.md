@@ -22,9 +22,9 @@ To create a "Plug and Play" experience where you simply connect your phone via U
 | File | Description |
 | :--- | :--- |
 | **`Setup-Pipeline.bat`** | **Start Here.** Prompts for adapter mapping, then installs the background service. |
-| **`AutoICS.ps1`** | The main logic engine. Monitors adapters and manages ICS status. |
+| **`AutoICS.ps1`** | **Logic Engine.** Monitors adapters, auto-detects tether interfaces by hardware, and manages ICS. |
 | **`Install-Service.ps1`** | Downloads **NSSM** and registers AutoICS as a Windows Service. |
-| **`Rename-Adapters.ps1`** | Standardizes your network adapter names to `USB-Tether` and `LAN`. |
+| **`Rename-Adapters.ps1`** | Setup utility that auto-detects and renames your network adapters to `USB-Tether` and `LAN`. |
 | **`Enable-Tether-ADB.bat`** | Optional utility to force-enable RNDIS (USB Tethering) via ADB. |
 | **`Uninstall-Service.ps1`** | Safely removes the AutoICS service and stops all background loops. |
 
@@ -51,10 +51,11 @@ To create a "Plug and Play" experience where you simply connect your phone via U
 ## 🚦 How it Works (Autonomous Mode)
 
 Once installed, you don't need to touch your PC. The system is **Self-Healing**:
-1.  **Detection**: The service checks for your phone every **30 seconds**.
-2.  **Activation**: If it detects the phone is "Up," it automatically enables ICS.
-3.  **Efficiency**: It uses only **~30MB of RAM** and **<1% CPU**, making it perfect for legacy hardware.
-4.  **Logging**: It only writes to `auto-ics.log` when a status change occurs, preventing disk bloat.
+1.  **Auto-Detection**: The service identifies your phone by its **hardware description** (Remote NDIS/RNDIS), meaning it works even if Windows renames the connection (e.g., from `Ethernet 5` to `Ethernet 6`) after a reboot.
+2.  **Renaming**: It automatically renames the detected adapter to `USB-Tether` to maintain a consistent internal state.
+3.  **Activation**: If it detects the phone is "Up," it automatically enables ICS sharing to the `LAN` adapter.
+4.  **Efficiency**: It uses only **~30MB of RAM** and **<1% CPU**, making it perfect for legacy hardware.
+5.  **Logging**: It only writes to `auto-ics.log` when a status change or auto-rename occurs, preventing disk bloat.
 
 ---
 

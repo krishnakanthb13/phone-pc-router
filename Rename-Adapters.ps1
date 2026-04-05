@@ -1,13 +1,21 @@
 # =========================
 # Renames adapters to USB-Tether and LAN (interactive by default)
+# Auto-detects the USB-tether adapter by hardware description (Remote NDIS /
+# RNDIS) so the correct adapter is pre-selected even after a reboot that
+# assigns a new network name (Ethernet 5, Ethernet 6, ...).
 # =========================
 
 [CmdletBinding()]
 param(
-    [string]$DefaultTetherName = "Ethernet 5",
-    [string]$DefaultLanName = "Ethernet",
+    # Leave empty to auto-detect by hardware description (recommended).
+    # Set explicitly only if auto-detection picks the wrong adapter.
+    [string]$DefaultTetherName = "",
+    [string]$DefaultLanName    = "Ethernet",
     [switch]$NonInteractive
 )
+
+# Hardware description substrings that identify a USB-tether adapter.
+$tetherDescPatterns = @("Remote NDIS", "RNDIS", "Android", "USB Ethernet", "USB-Tether")
 
 $ErrorActionPreference = "Stop"
 
@@ -85,7 +93,20 @@ try {
         throw "At least 2 network adapters are required."
     }
 
-    $tetherAdapter = Select-Adapter -Prompt "Select the USB tether adapter (internet source):" -Candidates $adapters -DefaultName $DefaultTetherName
+    # Auto-detect the tether adapter by hardware description if no name given
+    $autoTetherName = $DefaultTetherName
+    if ([string]::IsNullOrWhiteSpace($autoTetherName)) {
+        $detected = $adapters | Where-Object {
+            $desc = $_.InterfaceDescription
+            ($tetherDescPatterns | Where-Object { $desc -match [regex]::Escape($_) }).Count -gt 0
+        } | Select-Object -First 1
+        if ($detected) {
+            $autoTetherName = $detected.Name
+            Write-Host "Auto-detected USB tether adapter: '$autoTetherName' ($($detected.InterfaceDescription))"
+        }
+    }
+
+    $tetherAdapter = Select-Adapter -Prompt "Select the USB tether adapter (internet source):" -Candidates $adapters -DefaultName $autoTetherName
     $lanCandidates = $adapters | Where-Object { $_.InterfaceIndex -ne $tetherAdapter.InterfaceIndex }
     $lanAdapter = Select-Adapter -Prompt "Select the LAN adapter (router target):" -Candidates $lanCandidates -DefaultName $DefaultLanName
 
