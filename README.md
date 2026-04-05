@@ -25,6 +25,7 @@ To create a "Plug and Play" experience where you simply connect your phone via U
 | **`AutoICS.ps1`** | **Logic Engine.** Monitors adapters, auto-detects tether interfaces by hardware, and manages ICS. |
 | **`Install-Service.ps1`** | Downloads **NSSM** and registers AutoICS as a Windows Service. |
 | **`Rename-Adapters.ps1`** | Setup utility that auto-detects and renames your network adapters to `USB-Tether` and `LAN`. |
+| **`Toggle-ICS.bat`** | **Manual Reset.** A one-click utility to disable and re-enable ICS sharing. |
 | **`Enable-Tether-ADB.bat`** | Optional utility to force-enable RNDIS (USB Tethering) via ADB. |
 | **`Uninstall-Service.ps1`** | Safely removes the AutoICS service and stops all background loops. |
 
